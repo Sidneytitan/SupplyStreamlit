@@ -69,6 +69,15 @@ def create_pie_chart(df, sheet_name):
     fig = px.pie(df, names='status', title=f'Distribuição de Status - {sheet_name}', hole=0.5)
 
     try:
+        fig.update_traces(marker=dict(
+            colors=[
+                '#118DFF' if 'Atenção' in status else
+                '#164888' if 'Conforme' in status else
+                '#EF4824' if 'Vencido' in status else
+                '#3498db'  # Cor padrão para outras categorias
+                for status in df['status']
+            ]
+        ))
         fig.update_traces(textposition='inside', textinfo='percent+label',
                           pull=[0.1 if 'Vencido' in status else 0 for status in df['status']])
     except TypeError:
@@ -107,7 +116,7 @@ def create_pie_chart(df, sheet_name):
 
 
 def main():
-    st.title("Análise de Dados com Streamlit")
+    st.title("Análise de Dados")
 
     # Especificando o nome do arquivo Excel
     excel_filename = "PythonStreamlit.xlsx"
@@ -141,9 +150,11 @@ def main():
                 st.write(f"Dados carregados da aba '{selected_sheet}':")
                 st.dataframe(df.style.apply(highlight_vencido, axis=1))
 
-                # Gráfico de barras para contar a quantidade de status 'Vencido'
-                vencido_count = df['status'].apply(lambda x: 'Vencido' in x).sum()
-                st.write(f"Quantidade de status 'Vencido': {vencido_count}")
+                # Gráfico de barras para contar a quantidade de status 'Vencido' em operação
+                vencido_count = df[(df['status'] == 'Vencido') & (df['observação\n'] == 'EM OPERAÇÃO')].shape[0]
+
+
+                st.write(f"Quantidade de status 'Vencido' em operação: {vencido_count}")
 
     except FileNotFoundError:
         st.error(
@@ -156,4 +167,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
