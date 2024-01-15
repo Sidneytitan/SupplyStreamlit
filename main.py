@@ -96,11 +96,16 @@ def create_pie_chart(df, sheet_name):
     annotations = [
         f"{label}: {value}" for label, value in zip(labels, values)
     ]
+
+    # Adicionando a contagem de 'Vencido em operação' abaixo do gráfico
+    vencido_count = df[(df['status'] == 'Vencido') & (df['observação\n'] == 'EM OPERAÇÃO')].shape[0]
+    annotations.append(f"Vencido em operação: {vencido_count}")
+
     fig.update_layout(
         annotations=[
             {
                 "x": 0.5,
-                "y": -0.15,
+                "y": -0.2,  # Ajuste para a posição abaixo dos rótulos
                 "text": "<br>".join(annotations),
                 "showarrow": False,
                 "font": {"size": 12},
@@ -125,6 +130,7 @@ def main():
     sheet_names = pd.ExcelFile(excel_filename).sheet_names + ["Todos os Gráficos"]
 
     # Adicionando a opção de visualizar todos os gráficos
+
     selected_sheet = st.sidebar.selectbox("Escolha a aba:", sheet_names)
 
     try:
@@ -137,6 +143,7 @@ def main():
                 if 'status' in df_sheet.columns:
                     with cols[i % 2]:
                         st.plotly_chart(create_pie_chart(df_sheet, sheet_name), use_container_width=True)
+
         else:
             # Visualização individual para uma aba específica
             df = pd.read_excel(excel_filename, sheet_name=selected_sheet)
@@ -149,12 +156,6 @@ def main():
                 # Adicionando mensagens de depuração
                 st.write(f"Dados carregados da aba '{selected_sheet}':")
                 st.dataframe(df.style.apply(highlight_vencido, axis=1))
-
-                # Gráfico de barras para contar a quantidade de status 'Vencido' em operação
-                vencido_count = df[(df['status'] == 'Vencido') & (df['observação\n'] == 'EM OPERAÇÃO')].shape[0]
-
-
-                st.write(f"Quantidade de status 'Vencido' em operação: {vencido_count}")
 
     except FileNotFoundError:
         st.error(
