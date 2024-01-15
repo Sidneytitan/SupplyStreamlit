@@ -2,7 +2,7 @@ import streamlit as st
 import pandas as pd
 import plotly.express as px
 
-# Definindo um tema personalizado
+# Definindo um tema personalizado e configurações da página
 custom_theme = {
     "primaryColor": "#3498db",
     "backgroundColor": "#f4f4f4",
@@ -130,7 +130,6 @@ def main():
     sheet_names = pd.ExcelFile(excel_filename).sheet_names + ["Todos os Gráficos"]
 
     # Adicionando a opção de visualizar todos os gráficos
-
     selected_sheet = st.sidebar.selectbox("Escolha a aba:", sheet_names)
 
     try:
@@ -143,6 +142,12 @@ def main():
                 if 'status' in df_sheet.columns:
                     with cols[i % 2]:
                         st.plotly_chart(create_pie_chart(df_sheet, sheet_name), use_container_width=True)
+
+        elif selected_sheet in ["Veículos Bloqueados", "Data"]:
+            # Visualização da tabela para as abas específicas "Veículos Bloqueados" e "Data"
+            df = pd.read_excel(excel_filename, sheet_name=selected_sheet)
+            st.write(f"Dados carregados da aba '{selected_sheet}':")
+            st.dataframe(df.style.apply(highlight_vencido, axis=1))
 
         else:
             # Visualização individual para uma aba específica
@@ -168,3 +173,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+
